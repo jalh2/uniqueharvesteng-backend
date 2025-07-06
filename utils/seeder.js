@@ -9,10 +9,24 @@ const main = async () => {
 
     try {
         console.log('--- Populating About section ---');
+        const aboutFormData = new FormData();
+        for (const key in about) {
+            aboutFormData.append(key, about[key]);
+        }
+
+        const aboutImageDir = path.join(__dirname, '..', '..', 'frontend', 'public', 'images', 'about');
+        const aboutImagePath = path.join(aboutImageDir, 'about.png');
+        if (fs.existsSync(aboutImagePath)) {
+            const aboutImageBuffer = fs.readFileSync(aboutImagePath);
+            const aboutImageBlob = new Blob([aboutImageBuffer], { type: 'image/png' });
+            aboutFormData.append('image', aboutImageBlob, 'about.png');
+        } else {
+            console.warn('Warning: about.png not found, skipping image upload.');
+        }
+
         const aboutResponse = await fetch(`${API_URL}/about`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(about)
+            body: aboutFormData,
         });
         if (!aboutResponse.ok) throw new Error(`About request failed with status ${aboutResponse.status}`);
         console.log('About section populated.');
@@ -78,7 +92,10 @@ const main = async () => {
             method: 'PUT',
             body: heroFormData
         });
-        if (!heroResponse.ok) throw new Error(`Hero request failed with status ${heroResponse.status}`);
+        if (!heroResponse.ok) {
+            const errorData = await heroResponse.json();
+            throw new Error(`Hero request failed with status ${heroResponse.status}: ${errorData.message}`);
+        }
         console.log('Hero images uploaded.');
 
         console.log('Database populated successfully!');

@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getProjects,
   getProjectById,
+  getProjectImages,
   createProject,
   updateProject,
   deleteProject,
@@ -14,6 +15,9 @@ router.get('/', getProjects);
 
 // GET a single project by ID
 router.get('/:id', getProjectById);
+
+// GET project images by ID
+router.get('/:id/images', getProjectImages);
 
 // POST a new project with image uploads
 router.post('/', upload.array('images', 10), createProject);

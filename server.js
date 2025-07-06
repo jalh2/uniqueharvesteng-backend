@@ -79,4 +79,15 @@ app.use('/api/hero', heroRoutes);
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes);
 
+// Global error handling middleware
+app.use((err, req, res, next) => {
+  console.error('--- UNHANDLED ERROR ---');
+  console.error(err.stack);
+  res.status(500).json({ 
+    message: 'An internal server error occurred.',
+    error: err.message,
+    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+  });
+});
+
 // Note: Auth routes will be added later with crypto implementation

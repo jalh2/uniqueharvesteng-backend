@@ -1,9 +1,9 @@
 const About = require('../models/About');
 
-// Get About information
-exports.getAbout = async (req, res) => {
+// Get About information (text only)
+exports.getAboutText = async (req, res) => {
   try {
-    const about = await About.findOne();
+    const about = await About.findOne().select('-image');
     if (!about) {
       return res.status(404).json({ message: 'About information not found' });
     }
@@ -13,45 +13,51 @@ exports.getAbout = async (req, res) => {
   }
 };
 
+// Get About image
+exports.getAboutImage = async (req, res) => {
+  try {
+    const about = await About.findOne().select('image');
+    if (!about || !about.image) {
+      return res.status(404).json({ message: 'About image not found' });
+    }
+    // Send the image object directly
+    res.status(200).json(about.image);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Update About information
-exports.updateAbout = async (req, res) => {
+exports.updateAbout = async (req, res, next) => {
   const { introduction, motto, slogan, goal, mission, vision } = req.body;
 
   try {
     let about = await About.findOne();
-
     if (!about) {
-      // If no About document exists, create a new one
-      about = new About({
-        introduction,
-        motto,
-        slogan,
-        goal,
-        mission,
-        vision,
-      });
-      await about.save();
-      return res.status(201).json(about); // 201 Created
-    } else {
-      // If an About document exists, update it
-      about.introduction = introduction || about.introduction;
-      about.motto = motto || about.motto;
-      about.slogan = slogan || about.slogan;
-      about.goal = goal || about.goal;
-      about.mission = mission || about.mission;
-      about.vision = vision || about.vision;
-
-      if (req.file) {
-        about.image = {
-          data: req.file.buffer.toString('base64'),
-          contentType: req.file.mimetype,
-        };
-      }
-
-      await about.save();
-      return res.status(200).json(about); // 200 OK
+      // If no document, create one to ensure we have an object to update
+      about = new About();
     }
+
+    // Assign text fields from the request body
+    about.introduction = introduction || about.introduction;
+    about.motto = motto || about.motto;
+    about.slogan = slogan || about.slogan;
+    about.goal = goal || about.goal;
+    about.mission = mission || about.mission;
+    about.vision = vision || about.vision;
+
+    // Handle the image file if it exists
+    if (req.file) {
+      about.image = {
+        data: req.file.buffer.toString('base64'),
+        contentType: req.file.mimetype,
+      };
+    }
+
+    const updatedAbout = await about.save();
+    res.status(200).json(updatedAbout);
+
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    next(error); // Pass error to the global error handler
   }
 };

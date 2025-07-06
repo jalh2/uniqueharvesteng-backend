@@ -3,27 +3,27 @@ const mongoose = require('mongoose');
 const AboutSchema = new mongoose.Schema({
   introduction: {
     type: String,
-    required: true,
+    // required: true, // Temporarily disable for seeding
   },
   motto: {
     type: String,
-    required: true,
+    // required: true,
   },
   slogan: {
     type: String,
-    required: true,
+    // required: true,
   },
   goal: {
     type: String,
-    required: true,
+    // required: true,
   },
   mission: {
     type: String,
-    required: true,
+    // required: true,
   },
   vision: {
     type: String,
-    required: true,
+    // required: true,
   },
   image: {
     data: String, // Base64 encoded image
