@@ -3,7 +3,7 @@ const multer = require('multer');
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
-const upload = multer({ storage: storage, limits: { files: 4, fileSize: 100 * 1024 * 1024 } }); // 100MB per file
+const upload = multer({ storage: storage, limits: { files: 4, fileSize: 100 * 1024 * 1024, fieldSize: 25 * 1024 * 1024 } }); // 100MB per file, 25MB for fields
 
 // Get the hero section text content
 exports.getHeroText = async (req, res) => {
@@ -38,21 +38,32 @@ exports.getHeroImages = async (req, res) => {
 
 // Update the hero section content
 exports.updateHero = async (req, res, next) => {
-  const { heading, subheading } = req.body;
+  const { heading, subheading, existingImages } = req.body;
 
   try {
     const updateData = {};
     if (heading) updateData.heading = heading;
     if (subheading) updateData.subheading = subheading;
 
+    let images = [];
+    if (existingImages) {
+      try {
+        images = JSON.parse(existingImages);
+      } catch (e) {
+        return res.status(400).json({ message: 'Invalid format for existingImages.' });
+      }
+    }
+
     if (req.files && req.files.length > 0) {
-      updateData.images = req.files.map(file => ({
+      const newImages = req.files.map(file => ({
         data: file.buffer.toString('base64'),
         contentType: file.mimetype,
       }));
+      images = images.concat(newImages);
     }
 
-    // Use findOneAndUpdate with upsert to create the document if it doesn't exist.
+    updateData.images = images;
+
     const updatedHero = await Hero.findOneAndUpdate({}, { $set: updateData }, {
       new: true,
       upsert: true,
