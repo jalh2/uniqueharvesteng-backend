@@ -1,6 +1,9 @@
+const fetch = require('node-fetch');
+const { API_BASE_URL } = require('./config');
+
 const main = async () => {
     try {
-        const response = await fetch('http://localhost:5000/api/auth/users');
+        const response = await fetch(`${API_BASE_URL}/auth/users`);
         const responseData = await response.json();
 
         if (!response.ok) {

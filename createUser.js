@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { API_BASE_URL } = require('./config');
 
 const main = async () => {
     try {
@@ -10,7 +11,7 @@ const main = async () => {
 
         const userData = fs.readFileSync(userFilePath, 'utf-8');
 
-        const response = await fetch('http://localhost:5000/api/auth/register', {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

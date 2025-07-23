@@ -80,19 +80,17 @@ exports.updateTeamMember = async (req, res) => {
 
 // Delete a Team Member
 exports.deleteTeamMember = async (req, res) => {
-  const { memberId } = req.params;
   try {
     const team = await Team.findOne();
     if (!team) {
-      return res.status(404).json({ message: 'Team information not found' });
+      return res.status(404).json({ message: 'Team not found' });
     }
-    const member = team.teamMembers.id(memberId);
-    if (!member) {
-        return res.status(404).json({ message: 'Team member not found' });
-    }
-    member.remove();
+
+    // Pull the sub-document from the array
+    team.teamMembers.pull({ _id: req.params.memberId });
+
     await team.save();
-    res.status(200).json({ message: 'Team member deleted successfully' });
+    res.json({ message: 'Team member deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
